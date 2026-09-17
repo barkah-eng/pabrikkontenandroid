@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pabrik Konten Sejarah</title>
+<style>
+:root{--bg:#f7f3ed;--card:#fff;--red:#a91518;--gold:#ffbd22;--green:#176c3a;--muted:#666}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#171717}
+.wrap{padding:14px 14px 30px;max-width:720px;margin:auto}.brand{font-size:25px;font-weight:900;line-height:1.05;margin:8px 0 3px}.sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.card{background:#fff;border:1px solid #ddd;border-radius:20px;padding:16px;margin-bottom:14px}
+label{font-weight:800;display:block;margin:10px 0 6px}input,textarea,select{width:100%;padding:13px;border:1px solid #ccc;border-radius:12px;font:inherit;background:#fff}
+textarea{min-height:190px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{width:100%;padding:16px;border:0;border-radius:14px;font-size:17px;font-weight:900}.primary{background:var(--red);color:white}.gold{background:var(--gold);color:#111}.small{font-size:12px;color:#666}
+.hide{display:none}.progress{height:16px;background:#eee;border-radius:99px;overflow:hidden;margin-top:10px}.bar{height:100%;width:0;background:var(--green);transition:.3s}
+video{width:100%;border-radius:14px;background:#000;margin-top:10px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">Pabrik Konten Sejarah</div>
+  <div class="sub">Android • Video AI langsung dari dashboard</div>
+
+  <div id="setupCard" class="card">
+    <h3 style="margin-top:0">Pengaturan pertama</h3>
+    <div class="small">Masukkan URL backend sekali. Setelah disimpan, Anda tidak perlu mengaturnya lagi.</div>
+    <label>URL Backend</label>
+    <input id="backend" placeholder="https://nama-aplikasi-anda.vercel.app">
+    <button class="gold" style="margin-top:12px" onclick="saveBackend()">SIMPAN PENGATURAN</button>
+  </div>
+
+  <div class="card">
+    <label>Judul</label>
+    <input id="title" value="Gula Sudah Ada Sebelum Belanda">
+    <label>Teks cerita</label>
+    <textarea id="story">Kalau Anda mengira Belanda yang membawa gula ke Indonesia, ternyata ceritanya tidak sesederhana itu. Jauh sebelum industri gula kolonial berkembang, masyarakat Nusantara sudah mengenal tebu dan mengolahnya menjadi gula. Pada masa VOC, terutama sekitar Batavia, produksi gula mulai berkembang untuk perdagangan.</textarea>
+    <div class="grid">
+      <div><label>Rasio</label><select id="ratio"><option selected>9:16</option><option>16:9</option></select></div>
+      <div><label>Gaya</label><select id="style"><option selected>Dokumenter sinematik</option><option>Historis realistis</option></select></div>
+      <div><label>Model</label><select id="model"><option value="veo-3.1-lite-generate-preview" selected>Veo 3.1 Lite</option><option value="veo-3.1-fast-generate-preview">Veo 3.1 Fast</option></select></div>
+      <div><label>Resolusi</label><select id="resolution"><option selected>720p</option><option>1080p</option></select></div>
+    </div>
+    <button id="go" class="primary" style="margin-top:14px" onclick="generate()">BUAT VIDEO LANGSUNG</button>
+  </div>
+
+  <div id="statusCard" class="card hide">
+    <b id="msg">Menyiapkan...</b>
+    <div class="progress"><div id="bar" class="bar"></div></div>
+    <div id="pct" style="margin-top:6px">0%</div>
+  </div>
+
+  <div id="resultCard" class="card hide">
+    <h2 style="margin-top:0">Video selesai</h2>
+    <video id="video" controls playsinline></video>
+    <a id="download" download="PabrikKontenVideo.mp4"><button class="gold" style="margin-top:10px">DOWNLOAD MP4</button></a>
+  </div>
+</div>
+
+<script>
+const $=x=>document.getElementById(x);
+let BACKEND=localStorage.getItem("backend_url")||"";
+if(BACKEND){$("backend").value=BACKEND;$("setupCard").classList.add("hide")}
+
+function saveBackend(){
+  let v=$("backend").value.trim().replace(/\/$/,"");
+  if(!/^https:\/\//i.test(v)){alert("Gunakan URL https://");return}
+  localStorage.setItem("backend_url",v);BACKEND=v;$("setupCard").classList.add("hide");alert("Tersimpan.");
+}
+async function generate(){
+  if(!BACKEND){$("setupCard").classList.remove("hide");alert("Masukkan URL backend terlebih dahulu.");return}
+  $("go").disabled=true;$("statusCard").classList.remove("hide");$("resultCard").classList.add("hide");
+  $("msg").textContent="Mengirim ke Veo...";$("bar").style.width="5%";$("pct").textContent="5%";
+  try{
+    const r=await fetch(BACKEND+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      title:$("title").value,story:$("story").value,aspectRatio:$("ratio").value,style:$("style").value,
+      model:$("model").value,resolution:$("resolution").value
+    })});
+    const j=await r.json();if(!r.ok)throw new Error(j.error||JSON.stringify(j));
+    let p=10;
+    const timer=setInterval(()=>{p=Math.min(90,p+3);$("bar").style.width=p+"%";$("pct").textContent=p+"%"},4000);
+    const poll=setInterval(async()=>{
+      try{
+        const q=await fetch(BACKEND+"/api/status?operation="+encodeURIComponent(j.operation));const s=await q.json();
+        if(s.error)throw new Error(JSON.stringify(s.error));
+        if(s.done){
+          clearInterval(poll);clearInterval(timer);
+          $("bar").style.width="100%";$("pct").textContent="100%";$("msg").textContent="Video selesai";
+          const u=BACKEND+"/api/video?url="+encodeURIComponent(s.videoUrl);
+          $("video").src=u;$("download").href=u;$("resultCard").classList.remove("hide");$("go").disabled=false;
+        }
+      }catch(e){
+        clearInterval(poll);clearInterval(timer);$("msg").textContent="Gagal: "+e.message;$("go").disabled=false;
+      }
+    },10000);
+  }catch(e){$("msg").textContent="Gagal: "+e.message;$("go").disabled=false}
+}
+</script>
+</body></html>
