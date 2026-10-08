@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swandibe - AI Content Creator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@400;600&display=swap');
+  
+  :root {
+    --bg-dark: #050608;
+    --panel-bg: #0d1117;
+    --neon-blue: #00f3ff;
+    --neon-pink: #ff007f;
+    --neon-green: #39ff14;
+    --text-main: #c9d1d9;
+  }
+  
+  body {
+    margin: 0;
+    font-family: 'Rajdhani', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3 {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 0;
+  }
+  
+  a { text-decoration: none; }
+  .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+  
+  .neon-blue { color: var(--neon-blue); text-shadow: 0 0 8px rgba(0, 243, 255, 0.6); }
+  .neon-pink { color: var(--neon-pink); text-shadow: 0 0 8px rgba(255, 0, 127, 0.6); }
+  
+  /* 1. HERO SECTION */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 60px;
+    background: radial-gradient(circle at 50% 0%, rgba(0,243,255,0.1) 0%, transparent 70%);
+    border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+  }
+  
+  .status-badge {
+    display: inline-block;
+    background: rgba(57, 255, 20, 0.1);
+    color: var(--neon-green);
+    border: 1px solid var(--neon-green);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+    letter-spacing: 1px;
+  }
+  
+  .hero h1 { font-size: 3.5em; margin-bottom: 10px; }
+  .hero p { font-size: 1.4em; color: #8b949e; max-width: 600px; margin: 0 auto; }
+  
+  /* 2. PROBLEM & SOLUTION CARD */
+  .comparison {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin: 60px 0;
+  }
+  
+  .card {
+    flex: 1;
+    min-width: 280px;
+    background: var(--panel-bg);
+    border: 1px solid #222;
+    padding: 30px;
+    border-radius: 8px;
+  }
+  
+  .card-chaos { border-left: 4px solid var(--neon-pink); }
+  .card-solution { border-left: 4px solid var(--neon-blue); }
+  .card h2 { margin-bottom: 20px; font-size: 1.5em; }
+  .card ul { padding-left: 20px; line-height: 1.8; font-size: 1.1em; }
+  
+  /* 3. CORE CAPABILITIES */
+  .capabilities { margin: 80px 0; }
+  .capabilities-title { text-align: center; margin-bottom: 40px; }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  
+  .feat-card {
+    background: var(--panel-bg);
+    border: 1px solid #1f2937;
+    padding: 25px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .feat-card:hover {
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+    transform: translateY(-5px);
+  }
+  
+  .feat-card h3 { color: var(--neon-blue); margin-bottom: 15px; }
+  .feat-card p { font-size: 1.05em; line-height: 1.6; color: #a1a1aa; margin: 0; }
+  
+  /* 4. INTERACTIVE SIMULATION */
+  .simulation {
+    background: var(--panel-bg);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    border-radius: 10px;
+    padding: 30px;
+    margin: 60px 0;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.05);
+  }
+  
+  .sim-header { text-align: center; margin-bottom: 25px; }
+  .chat-box {
+    background: #020203;
+    border: 1px solid #333;
+    border-radius: 6px;
+    height: 300px;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-family: monospace;
+    font-size: 15px;
+  }
+  
+  .msg { max-width: 85%; padding: 12px 18px; border-radius: 6px; line-height: 1.5; }
+  .msg-bot { background: #0d1f2d; color: var(--neon-blue); border-left: 3px solid var(--neon-blue); align-self: flex-start; }
+  .msg-user { background: #2d0d1f; color: var(--text-main); border-right: 3px solid var(--neon-pink); align-self: flex-end; }
+  .typing { color: var(--neon-green); font-style: italic; font-size: 0.9em; display: none; padding-top: 5px; }
+  
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn-sim {
+    background: transparent;
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 10px 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: 0.3s;
+  }
+  
+  .btn-sim:hover { background: rgba(0, 243, 255, 0.1); }
+  .btn-sim:disabled { opacity: 0.5; cursor: not-allowed; }
+  
+  /* 5. FOOTER & CTA */
+  .footer {
+    text-align: center;
+    padding: 60px 20px;
+    background: #030406;
+    border-top: 1px solid #222;
+  }
+  
+  .cta-btn {
+    display: inline-block;
+    background: var(--neon-blue);
+    color: #000;
+    padding: 15px 40px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+  }
+  
+  .cta-btn:hover {
+    background: #fff;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+  }
+  
+  .footer-text { font-size: 0.9em; color: #555; }
+  
+  /* Scrollbar Customization */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #050608; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+  <!-- HERO SECTION -->
+  <header class="hero">
+    <div class="container">
+      <div class="status-badge">🟢 Status: Active & Ready 24/7</div>
+      <h1 class="neon-blue">SWANDIBE</h1>
+      <p>Karyawan Digital Andalan Anda untuk Produksi Konten Promosi</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- PROBLEM & SOLUTION CARD -->
+    <section class="comparison">
+      <div class="card card-chaos">
+        <h2 class="neon-pink">X THE CHAOS</h2>
+        <ul>
+          <li>Susah mencari dan mengeksplorasi ide konten promosi yang segar.</li>
+          <li>Keterbatasan waktu yang menyebabkan ketidakmampuan untuk rutin membuat konten.</li>
+        </ul>
+      </div>
+      <div class="card card-solution">
+        <h2 class="neon-blue">✓ THE SOLUTION</h2>
+        <ul>
+          <li>Pembuatan ide dan konsep konten dibantu secara cerdas oleh AI.</li>
+          <li>Proses eksekusi dan pembuatan konten diotomatisasi agar produksi lebih cepat dan konsisten.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- CORE CAPABILITIES -->
+    <section class="capabilities">
+      <div class="capabilities-title">
+        <h2><span class="neon-blue">///</span> Core Capabilities</h2>
+      </div>
+      <div class="grid">
+        <div class="feat-card">
+          <h3>01. ChatGPT</h3>
+          <p>Mesin analitik dan kreatif untuk menghasilkan ide-ide kampanye baru serta merangkai struktur *copywriting* promosi.</p>
+        </div>
+        <div class="feat-card">
+          <h3>02. Google Flow</h3>
+          <p>Merancang alur kerja visual, merumuskan desain konseptual, dan mengeksekusi *storyboard* kreatif untuk memperkuat pesan promosi.</p>
+        </div>
+        <div class="feat-card">
+          <h3>03. Google Drive</h3>
+          <p>Sentralisasi penyimpanan otomatis untuk mendokumentasikan aset, jadwal, dan *draft* konten agar selalu rapi dan mudah diakses.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE SIMULATION -->
+    <section class="simulation">
+      <div class="sim-header">
+        <h2 class="neon-blue">LIVE TERMINAL SIMULATION</h2>
+        <p>Akses protokol Swandibe untuk demonstrasi sistem.</p>
+      </div>
+      
+      <div class="chat-box" id="chatBox">
+        <div class="msg msg-bot">> SYSTEM ONLINE. Swandibe siap membantu eksekusi konten Anda. Pilih modul perintah di bawah.</div>
+      </div>
+      <div class="typing" id="typingIndicator">Swandibe sedang memproses data...</div>
+      
+      <div class="btn-group">
+        <button class="btn-sim" onclick="simulateChat('Berikan 3 ide konten promosi untuk minggu ini.', '> Men-generate ide via ChatGPT... (1) Video edukasi produk, (2) Behind-the-scenes proses produksi, (3) Diskon kilat akhir pekan. Naskah sudah saya siapkan.')">Generate Ide</button>
+        <button class="btn-sim" onclick="simulateChat('Buat alur visual konten diskon kilat.', '> Mengakses Google Flow... Prompt visual dan arahan scene storyboard untuk konten diskon telah disusun. Siap untuk dieksekusi.')">Eksekusi Visual</button>
+        <button class="btn-sim" onclick="simulateChat('Simpan semua naskah dan aset visual.', '> Mengunggah ke Google Drive... Seluruh data promosi berhasil diamankan di folder \'Konten_Minggu_Ini\'.')">Simpan ke Drive</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER & CTA -->
+  <footer class="footer">
+    <div class="container">
+      <a href="https://wa.me/6285742252669" target="_blank" class="cta-btn">INISIASI KONEKSI WA</a>
+      <p class="footer-text">Built with AI · AI Builder Bootcamp Showcase</p>
+    </div>
+  </footer>
+
+  <script>
+    function simulateChat(userText, botResponse) {
+      const chatBox = document.getElementById('chatBox');
+      const typing = document.getElementById('typingIndicator');
+      const buttons = document.querySelectorAll('.btn-sim');
+      
+      // Matikan tombol saat proses berlangsung
+      buttons.forEach(btn => btn.disabled = true);
+
+      // Render pesan User
+      const userDiv = document.createElement('div');
+      userDiv.className = 'msg msg-user';
+      userDiv.textContent = userText;
+      chatBox.appendChild(userDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Tampilkan indikator mengetik
+      typing.style.display = 'block';
+
+      // Simulasi delay respon AI
+      setTimeout(() => {
+        typing.style.display = 'none';
+        
+        const botDiv = document.createElement('div');
+        botDiv.className = 'msg msg-bot';
+        botDiv.textContent = botResponse;
+        chatBox.appendChild(botDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        // Aktifkan tombol kembali
+        buttons.forEach(btn => btn.disabled = false);
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
